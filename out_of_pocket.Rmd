@@ -1,0 +1,37 @@
+---
+title: "EDA"
+author: "Tong Sun"
+date: "4/4/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+data1 <- read.csv("Admission.csv")
+data2 <- read.csv("Claim.csv")
+library(dplyr)
+total <- dplyr::left_join(data1, data2, by = "PATIENT_ID")
+pocket1 <- total[ , c(1,4,12,35)]
+duplicated(pocket1)
+pocket2 <- pocket1[!duplicated(pocket1), ]
+pocket3 <- pocket2[order(pocket2$DISCHARGE_DATE),]
+## Out_of_pocket_by_state
+library(ggplot2)
+ggplot(data = pocket3, aes(x = DISCHARGE_DATE, y = OUT_OF_POCKET)) + geom_line(aes(color = STATE_CODE))
+
+pocket4 <-total[ , c(1,12,35,38)]
+duplicated(pocket4)
+pocket5 <- pocket4[!duplicated(pocket4), ]
+
+ggplot(data = pocket5, aes(x = CHARGE, y = OUT_OF_POCKET)) + geom_point(aes(color = STATE_CODE))
+
+total$DISCHARGE_DATE<-as.Date(total$DISCHARGE_DATE)
+total$ADMISSION_DATE<-as.Date(total$ADMISSION_DATE)
+total$length <-difftime(total$DISCHARGE_DATE,total$ADMISSION_DATE,units="days")
+
+boxplot(total$length ~ total$STATE_CODE, data = total)
+```
